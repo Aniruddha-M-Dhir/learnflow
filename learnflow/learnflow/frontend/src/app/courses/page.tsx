@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -10,6 +9,7 @@ type Course = { id: number; title: string; description: string };
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [err, setErr] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true); // Add a loading state
 
   useEffect(() => {
     (async () => {
@@ -21,6 +21,8 @@ export default function CoursesPage() {
         setCourses(list);
       } catch (e: any) {
         setErr(e.message || 'Failed to load courses');
+      } finally {
+        setIsLoading(false); // Stop loading
       }
     })();
   }, []);
@@ -29,8 +31,12 @@ export default function CoursesPage() {
     <div>
       <h1 className="text-2xl font-semibold mb-4">Courses</h1>
       {err && <p className="text-red-600 mb-4">{err}</p>}
+      
+      {/* Show loading message */}
+      {isLoading && <p>Loading courses...</p>}
+
       <ul className="grid sm:grid-cols-2 gap-4">
-        {courses.map((c) => (
+        {!isLoading && courses.map((c) => (
           <li key={c.id} className="border rounded p-4 bg-white">
             <h2 className="font-medium">{c.title}</h2>
             <p className="text-sm text-gray-600">{c.description}</p>
@@ -39,7 +45,7 @@ export default function CoursesPage() {
             </Link>
           </li>
         ))}
-        {courses.length === 0 && !err && (
+        {!isLoading && courses.length === 0 && !err && (
           <li className="text-gray-500">No courses yet.</li>
         )}
       </ul>

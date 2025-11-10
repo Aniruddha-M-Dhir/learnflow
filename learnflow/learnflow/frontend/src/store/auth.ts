@@ -1,7 +1,7 @@
 // src/store/auth.ts
 import { create } from 'zustand';
+// FIX: We need functions from 'lib/api' AND 'lib/auth'
 import { api } from '@/lib/api';
-// FIX: Importing the REAL function names from lib/auth.ts
 import { saveTokens, clearTokens, getAccessToken } from '@/lib/auth';
 
 type Role = 'instructor' | 'student' | null;
@@ -15,58 +15,61 @@ type AuthState = {
   hydrate: () => Promise<void>;
 };
 
-// FIX: Use the correct environment variable from your .env.local file
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? '';
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
-  ready: false,
+  ready: false, // This starts as 'false' on a new tab
 
   login: async (username, password) => {
-    // FIX: Use the BASE variable to contact the token endpoint
+    // This login function is correct
     const res = await fetch(`${BASE}/api/token/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
 
-    if (!res.ok) throw new Error('Invalid credentials'); 
-    
+    if (!res.ok) throw new Error('Invalid credentials');
     const { access, refresh } = await res.json();
-    
-    // FIX: Use 'saveTokens' (the real function name)
-    // The original code used 'setTokens', which does not exist.
-    saveTokens(access, refresh);
+    saveTokens(access, refresh); // Save tokens to localStorage
 
     const me = await api('/api/me/');
     if (!me.ok) throw new Error('Failed to fetch user profile');
     
     const user = await me.json();
-    set({ user });
+    set({ user, ready: true }); // Set user and mark as ready
   },
 
   logout: () => {
-    // FIX: Use 'clearTokens'. The original code removed the wrong keys.
-    clearTokens();
-    set({ user: null });
+    clearTokens(); // Clear localStorage
+    set({ user: null, ready: true });
   },
 
+  // --- THIS IS THE FIX FOR THE "NEW TAB" PROBLEM ---
   hydrate: async () => {
-    // FIX: This function was broken.
-    const token = getAccessToken(); // from lib/auth.ts
+    // 1. Check if a token exists in localStorage
+    const token = getAccessToken();
+
     if (token) {
+      // 2. If token exists, validate it by fetching the user
       try {
         const me = await api('/api/me/');
         if (me.ok) {
+          // 3. If token is valid, set the user
           set({ user: await me.json() });
         } else {
+          // 4. If token is invalid (expired), clear it
           set({ user: null });
-          clearTokens(); // Token is bad, so clear it
+          clearTokens();
         }
       } catch (e) {
+        // Network error, etc.
         set({ user: null });
+        clearTokens();
       }
     }
+    // 5. Mark the app as 'ready' so it can show the page
     set({ ready: true });
   },
+  // --- END FIX ---
 }));

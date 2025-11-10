@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, type FormEvent } from 'react'; // <-- FIX IS HERE
+import { useState, useEffect, type FormEvent } from 'react'; // <-- FIX 1: 'type FormEvent'
 import { useParams, useRouter }from 'next/navigation';
 import { api } from '@/lib/api';
 import Link from 'next/link'; 
+import { useAuth } from '@/store/auth'; // <-- Import useAuth
 
 type Chapter = {
   id: number;
@@ -21,6 +22,11 @@ export default function ManageCoursePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
+  // --- FIX 2: Select auth state individually ---
+  const user = useAuth((s) => s.user);
+  const ready = useAuth((s) => s.ready);
+  // --- END FIX ---
+
   const [course, setCourse] = useState<Course | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [error, setError] = useState('');
@@ -29,7 +35,9 @@ export default function ManageCoursePage() {
   const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    // Wait for auth to be ready
+    if (!id || !ready) return;
+
     const courseId = Number(id);
 
     const fetchCourse = async () => {
@@ -57,7 +65,7 @@ export default function ManageCoursePage() {
 
     fetchCourse();
     fetchChapters();
-  }, [id]);
+  }, [id, ready]); // Add 'ready' to dependency array
 
   const handleCreateChapter = async (e: FormEvent) => {
     e.preventDefault();
@@ -90,7 +98,11 @@ export default function ManageCoursePage() {
   };
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (!course) return <p>Loading course...</p>;
+  
+  // Wait for both auth and course to be ready
+  if (!ready || !course) {
+    return <p>Loading course...</p>;
+  }
 
   return (
     <div>
