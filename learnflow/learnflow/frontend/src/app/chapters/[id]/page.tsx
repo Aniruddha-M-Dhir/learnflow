@@ -15,7 +15,8 @@ export default function ChapterRead({ params }: { params: { id: string } }) {
         if (!res.ok) { setError(`Failed to load (status ${res.status})`); return; }
         const data = await res.json();
         setTitle(data.title || '');
-        setHtml(data.content_html || '');
+        // FIX: Changed data.content_html to data.content
+        setHtml(data.content || '');
       } catch (e: any) {
         setError(e.message || 'Error loading chapter');
       }

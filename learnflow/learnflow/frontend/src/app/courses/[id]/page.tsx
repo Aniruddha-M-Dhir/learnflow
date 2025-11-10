@@ -29,15 +29,34 @@ export default function CourseDetail() {
     })();
   }, [id]);
 
+  // FIX: Updated this function to POST to the correct endpoint (/api/enrollments/)
   const join = async () => {
-    const res = await api(`/api/courses/${id}/join/`, { method: 'POST' });
-    if (res.ok) setJoined(true);
+    if (!course) return; // Make sure course is loaded
+
+    try {
+      const res = await api(`/api/enrollments/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          course: course.id, // Send the course ID in the body
+        }),
+      });
+
+      if (res.ok) {
+        setJoined(true);
+      } else {
+        const errorData = await res.json();
+        // Show a more useful error, e.g., "Already enrolled"
+        setErr(`Failed to join: ${JSON.stringify(errorData)}`);
+      }
+    } catch (e: any) {
+      setErr(e.message || 'Error joining course');
+    }
   };
 
   if (err) return <p className="p-8 text-red-600">{err}</p>;
   if (!course) return <p className="p-8">Loading...</p>;
 
-  const publicChapters = (course.chapters || []).filter(ch => ch.is_public);
+  const publicChapters = (course?.chapters || []).filter(ch => ch.is_public);
 
   return (
     <div>

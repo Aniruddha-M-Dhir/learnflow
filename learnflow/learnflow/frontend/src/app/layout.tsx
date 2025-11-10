@@ -3,7 +3,8 @@
 import './globals.css';
 import { useEffect } from 'react';
 import { useAuth } from '@/store/auth';
-import Navbar from '@/components/Navbar';
+// FIX: Changed import from '@/components/Navbar' to '@/components/Nav'
+import Navbar from '@/components/Nav';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const hydrate = useAuth((s) => s.hydrate);

@@ -14,6 +14,12 @@ export default function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr('');
+
+    // --- NEW DEBUGGING STEP ---
+    // Check your browser's console to make sure this is what you expect.
+    console.log('Attempting login with:', { username: u, password: p });
+    // --- END DEBUGGING STEP ---
+
     try {
       await login(u, p);
       router.push('/courses'); // default after login
