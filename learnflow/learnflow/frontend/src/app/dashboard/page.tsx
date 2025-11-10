@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react'; // <-- FIX IS HERE
 import { useAuth } from '@/store/auth';
 import Link from 'next/link';
 import { api } from '@/lib/api';
@@ -14,17 +14,13 @@ type Course = {
 
 function InstructorDashboard() {
   const user = useAuth((s) => s.user);
-  
-  // --- THIS IS THE FIX ---
-  // Added the missing '=' sign before useState
   const [myCourses, setMyCourses] = useState<Course[]>([]);
-  // --- END FIX ---
-
   const [error, setError] = useState('');
   const [title, setTitle] = useState('');
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
 
+  // This function is working
   useEffect(() => {
     if (!user) return;
     const fetchCourses = async () => {
@@ -42,6 +38,7 @@ function InstructorDashboard() {
     fetchCourses();
   }, [user]);
 
+  // This function is also working
   const handleCreateCourse = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
@@ -72,6 +69,7 @@ function InstructorDashboard() {
       <ul className="space-y-2 mb-8">
         {myCourses.length > 0 ? (
           myCourses.map(course => (
+            // This is the link to the manage page
             <li key={course.id}>
               <Link
                 href={`/instructor/courses/${course.id}`}
@@ -87,6 +85,7 @@ function InstructorDashboard() {
         )}
       </ul>
 
+      {/* This form is unchanged */}
       <form onSubmit={handleCreateCourse} className="p-4 bg-white border rounded shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Create New Course</h2>
         <div className="space-y-3">
@@ -108,7 +107,7 @@ function InstructorDashboard() {
             className="w-full border rounded p-2"
             placeholder="Course Description"
             value={description}
-            onChange={e => setDescription(e.target.value)} // This typo is also fixed
+            onChange={e => setDescription(e.target.value)}
           />
           <button type="submit" className="px-4 py-2 bg-black text-white rounded">
             Create Course
