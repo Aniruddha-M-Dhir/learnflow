@@ -120,7 +120,6 @@ function InstructorDashboard() {
   );
 }
 
-// --- THIS IS THE FIX ---
 // This is the component for students
 function StudentDashboard() {
   const [myCourses, setMyCourses] = useState<Course[]>([]);
@@ -190,10 +189,9 @@ function StudentDashboard() {
     </div>
   );
 }
-// --- END FIX ---
 
 
-// Main Page Component (Unchanged)
+// Main Page Component (Modified)
 export default function DashboardPage() {
   const user = useAuth((s) => s.user);
   const ready = useAuth((s) => s.ready);
@@ -205,13 +203,14 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div>
-        <h1 className="text-2xl font-semibold">Access Denied</h1>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="mt-2">
           Please <Link href="/login" className="text-blue-600 hover:underline">log in</Link> to view your dashboard.
         </p>
       </div>
     );
   }
+
 
   return (
     <div>
